@@ -1,65 +1,27 @@
-import { Router  } from "express";
+import { Router } from "express";
+import UserController from "./users.controller.js";
 
-export class UserRoutes{
-    static get routes () {
+export class UserRoutes {
+    static get routes() {
         const router = Router();
+        const userController = new UserController()
 
         //definir todas nuestras rutas que tengan que ver con el usuario
 
-        //obtener todos los usuario
-        router.get('/', (req, res) => {
-            res.json({
-                message: "Get all Users"
-            })
-        })
+        //obtener todos los usuarios
+        router.get('/', userController.getUsersPagination)
         //obtener un usuario por id
-        router.get('/:id', (req, res) => {
-            const id = req.params.id
-            res.json({
-                id,
-                message: "Get User by id"
-            })
-        })
+        router.get('/:id', userController.getUserById)
         //obtener un usuario por email
-        router.get('/email/:email', (req, res) => {
-            const email = req.params.email
-            res.json({
-                email,
-                message: "Get User by email"
-            })
-        })
+        router.post('/email/', userController.getUserByEmail)
         //verificar un usuario
-        router.post('/verify', (req, res) => {
-            res.json({
-                message: "Verify User"
-            })
-        })
+        router.post('/verify', userController.verifyUser)
         //crear un usuario
-        router.post('/', (req, res) => {
-            const data = req.body;
-            res.json({
-                data,
-                message: "Create User"
-            })
-        })
+        router.post('/', userController.createUser)
         //editar un usario
-        router.put('/:id', (req, res) => {
-            const id = req.params.id;
-            const data = req.body;
-            res.json({
-                id,
-                data,
-                message: "Update User"
-            })
-        })
+        router.put('/:id', userController.updateUser)
         //eliminar un usuario
-        router.delete('/:id', (req, res) => {
-            const id = req.params.id;
-            res.json({
-                id,
-                message: "Delete User"
-            })
-        })
+        router.delete('/:id', userController.deleteUser)
 
         return router
     }
