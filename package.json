@@ -1,6 +1,6 @@
 {
   "name": "starter",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -17,6 +17,7 @@
     "ejs": "^3.1.10",
     "env-var": "^7.4.1",
     "express": "^4.19.2",
+    "joi": "^17.12.3",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {

@@ -1,5 +1,7 @@
 import { Router } from "express";
 import UserController from "./users.controller.js";
+import { validation } from "../../../../middlewares/validations.middleware.js";
+import { createUserSchema, updateUserSchema, validateEmailSchema } from "../../../../utils/validations.helper.js";
 
 export class UserRoutes {
     static get routes() {
@@ -13,13 +15,13 @@ export class UserRoutes {
         //obtener un usuario por id
         router.get('/:id', userController.getUserById)
         //obtener un usuario por email
-        router.post('/email/', userController.getUserByEmail)
+        router.post('/email/', validation(validateEmailSchema), userController.getUserByEmail)
         //verificar un usuario
         router.post('/verify', userController.verifyUser)
         //crear un usuario
-        router.post('/', userController.createUser)
+        router.post('/', validation(createUserSchema), userController.createUser)
         //editar un usario
-        router.put('/:id', userController.updateUser)
+        router.put('/:id', validation(updateUserSchema), userController.updateUser)
         //eliminar un usuario
         router.delete('/:id', userController.deleteUser)
 

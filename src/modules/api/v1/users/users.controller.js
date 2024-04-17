@@ -56,11 +56,7 @@ export default class UserController {
     //crear un usuario
     createUser = (req, res) => {
         const { fullname, email, pass } = req.body;
-        if (!fullname || !email || !pass) {
-            return res.status(400).json({
-                error: 'Los campos fullname, email y pass son obligatorios'
-            })
-        }
+
         const lastId = this.userModel.getLastId();
 
         const newUser = {
@@ -88,6 +84,13 @@ export default class UserController {
     updateUser = (req, res) => {
         const id = req.params.id;
         const { fullname, email, pass } = req.body;
+
+        if (!fullname && !pass && !email) {
+            return res.status(404).json({
+                error: "Es necesario al menos un dato a actualizar"
+            })
+        }
+
         const user = this.userModel.getById(+id)
         if (!user) {
             return res.status(404).json({
