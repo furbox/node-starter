@@ -1,9 +1,12 @@
 import express from 'express'
 import envs from "./config/envs.js"
 import path from 'node:path'
+import fs from 'node:fs'
 import __dirname from './utils/path.js'
 import { CronController } from "./modules/cron/cron.controller.js";
 import { ModuleRoutes } from './modules/routes.js';
+import morgan from 'morgan'
+import { getFullDate } from './utils/get-date.helper.js'
 
 
 export class Server {
@@ -39,6 +42,9 @@ export class Server {
 
     //middlewares
     middlewares(){
+        const fecha = getFullDate();
+        const accessLogStream = fs.createWriteStream(path.join(__dirname, `../logs/${fecha}.access.log`), { flags: 'a' })
+        this.app.use(morgan('combined', { stream: accessLogStream }))
         this.app.use(express.json())
         this.app.use(express.urlencoded({extended:true}))
         this.app.use(express.static("public"))
