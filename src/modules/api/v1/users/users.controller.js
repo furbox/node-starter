@@ -1,9 +1,12 @@
+import { NcryptHelper } from '../../../../utils/ncrypt.helper.js';
 import UserModel from './users.model.js'
 
 export default class UserController {
 
     constructor() {
         this.userModel = new UserModel()
+        this.hashPassword = NcryptHelper.hash;
+        this.comparePassword = NcryptHelper.compare;
     }
 
     //obtener todos los usuarios
@@ -63,7 +66,7 @@ export default class UserController {
             user_id: +lastId + 1,
             user_fullname: fullname,
             user_email: email,
-            user_pass: pass,
+            user_pass: this.hashPassword(pass),
             user_status: true,
             user_verify: false,
             user_createdAt: new Date(),
@@ -105,8 +108,11 @@ export default class UserController {
             user.user_email = email
         }
 
-        if (pass && pass !== user.user_pass) {
-            user.user_pass = pass
+        if (pass) {
+            const isMatching = this.comparePassword(pass, user.user_pass)
+            if(!isMatching){
+                user.user_pass = this.hashPassword(pass)
+            }
         }
 
         user.user_updatedAt = new Date()
