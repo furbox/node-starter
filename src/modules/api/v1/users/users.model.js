@@ -1,32 +1,45 @@
 import prisma from '../../../../data/prisma.js'
-import userData from './users.data.json' assert {type: "json"};
 
 export default class UserModel {
-    constructor() {
-        this.users = userData;
-    }
 
     //obtener todos los usuarios con paginacion
     async getPagination() {
-        return await prisma.user.findMany();
+        try {
+            return await prisma.user.findMany();            
+        } catch (error) {
+            console.log(`User Model getPagination: ${error}`)
+            return [];
+        }
     }
 
     //obtener un usuario por id
-    getById(id) {
-        let user = this.users.filter(user => {
-            return user.user_id === Number(id)
-        })[0]
-
-        return user;
+    async getById(id) {        
+        try {
+            const user = await prisma.user.findUnique({
+                where:{
+                    user_id: id
+                }
+            })
+            return user
+        } catch (error) {
+            console.log(`User Model getById: ${error}`)
+            return false;
+        }
     }
 
     //obtener un usuario por email
-    getByEmail(email) {
-        let user = this.users.filter(user => {
-            return user.user_email === email
-        })[0]
-
-        return user;
+    async getByEmail(email) {
+        try {
+            const user = await prisma.user.findUnique({
+                where:{
+                    user_email: email
+                }
+            })
+            return user
+        } catch (error) {
+            console.log(`User Model getByEmail: ${error}`)
+            return false;
+        }
     }
 
     //crear un usuario
@@ -37,37 +50,57 @@ export default class UserModel {
             })
             return newUser;
         } catch (error) {
-            console.log('create user error: ', error)
+            console.log(`User Model create: ${error}`)
             return false
         }
     }
 
     //editar un usuario
-    update(id, userData) {
-        let userIndex = this.users.findIndex((user) => {
-            return user.user_id === +id
-        })
-        if (userIndex !== -1) {
-            Object.assign(this.users[userIndex], userData);
-            return this.users[userIndex]
-        } else {
+    async update(id, userData) {
+        try {
+            const updatedUser = await prisma.user.update({
+                where:{
+                    user_id: id
+                },
+                data: userData
+            }) 
+
+            return updatedUser
+        } catch (error) {
+            console.log(`User Model update: ${error}`)
+            return false            
+        }
+    }
+
+    //eliminar un usuario de manera permanente
+    async delete(id){
+        try {
+            const deletedUser = await prisma.user.delete({
+                where:{
+                    user_id: id
+                }
+            })
+            return deletedUser;
+        } catch (error) {
+            console.log(`User Model delete: ${error}`)
+            return false            
+        }
+    }
+
+    async deleteLogic(id){
+        try {
+            const deletedUser = await prisma.user.update({
+                where: {
+                    user_id: id
+                },
+                data:{
+                    user_status: false
+                }
+            })
+            return deletedUser
+        } catch (error) {
+            console.log(`User Model deleteLogic: ${error}`)
             return false
         }
-
-    }
-
-    //eliminar un usuario
-    delete(id){
-        this.users = this.users.filter(user => {
-            return user.user_id != +id
-        })
-        return true
-    }
-
-    //obtener el ultimo id
-    getLastId(){
-        let lastUser = this.users[this.users.length - 1];
-        let lastUserId = lastUser ? lastUser.user_id : 0
-        return lastUserId;
     }
 }

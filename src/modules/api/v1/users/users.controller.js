@@ -19,9 +19,9 @@ export default class UserController {
     }
 
     //obtener un usuario por id
-    getUserById = (req, res) => {
+    getUserById = async (req, res) => {
         const id = req.params.id
-        const user = this.userModel.getById(+id)
+        const user = await this.userModel.getById(id)
 
         return user ?
             res.json({
@@ -34,9 +34,10 @@ export default class UserController {
     }
 
     //obtener un usuario por email
-    getUserByEmail = (req, res) => {
+    getUserByEmail = async (req, res) => {
         const { email } = req.body;
-        const user = this.userModel.getByEmail(email)
+        console.log(email)
+        const user = await this.userModel.getByEmail(email)
 
         return user ?
             res.json({
@@ -60,25 +61,34 @@ export default class UserController {
     createUser = async (req, res) => {
         const { fullname, email, pass } = req.body;
 
-
         const newUser = {
             user_fullname: fullname,
             user_email: email,
             user_pass: this.hashPassword(pass)
         }
+        try {
+            const user = await this.userModel.create(newUser);
 
-        const user = await this.userModel.create(newUser);
+            res.json({
+                data: user,
+                message: "ok Create User"
+            })
+        } catch (error) {
+            console.log(`User Controller createUser: ${error}`)
+            res.status(500).json({
+                error,
+                message: error.message
+            })
+        }
 
-        res.json({
-            data: user,
-            message: "ok Create User"
-        })
     }
 
     //editar un usario
-    updateUser = (req, res) => {
+    updateUser = async (req, res) => {
         const id = req.params.id;
         const { fullname, email, pass } = req.body;
+
+        let user = {};
 
         if (!fullname && !pass && !email) {
             return res.status(404).json({
@@ -86,57 +96,71 @@ export default class UserController {
             })
         }
 
-        const user = this.userModel.getById(+id)
-        if (!user) {
-            return res.status(404).json({
-                error: "User not found"
+        try {
+            user = await this.userModel.getById(id)
+            if (!user) {
+                return res.status(404).json({
+                    error: "User not found"
+                })
+            }
+            if (fullname && fullname !== user.user_fullname) {
+                user.user_fullname = fullname
+            }
+
+            if (email && email !== user.user_email) {
+                user.user_email = email
+            }
+
+            if (pass) {
+                const isMatching = this.comparePassword(pass, user.user_pass)
+                if (!isMatching) {
+                    user.user_pass = this.hashPassword(pass)
+                }
+            }
+
+            user.user_updatedAt = new Date()
+
+            const updateUser = await this.userModel.update(user.user_id, user)
+
+            res.json({
+                data: updateUser,
+                message: "ok Update User"
+            })
+        } catch (error) {
+            res.status(500).json({
+                error: 'Internal Server Error',
+                message: error.message
             })
         }
-        if (fullname && fullname !== user.user_fullname) {
-            user.user_fullname = fullname
-        }
-
-        if (email && email !== user.user_email) {
-            user.user_email = email
-        }
-
-        if (pass) {
-            const isMatching = this.comparePassword(pass, user.user_pass)
-            if(!isMatching){
-                user.user_pass = this.hashPassword(pass)
-            }
-        }
-
-        user.user_updatedAt = new Date()
-
-        const updateUser = this.userModel.update(user.user_id, user)
-
-        res.json({
-            data: updateUser,
-            message: "ok Update User"
-        })
     }
 
     //eliminar un usuario
-    deleteUser = (req, res) => {
+    deleteUser = async (req, res) => {
         const id = req.params.id;
-        const user = this.userModel.getById(+id)
-        if (!user) {
-            return res.status(404).json({
-                error: "User not found"
-            })
-        }
-        const deleteUser = this.userModel.delete(user.user_id)
-        if (deleteUser) {
+        try {
+            const user = await this.userModel.getById(id)
+            if (!user) {
+                return res.status(404).json({
+                    error: "User not found"
+                })
+            }
+
+            //const deletedUser = await this.userModel.delete(user.user_id)
+            const deletedUser = await this.userModel.deleteLogic(user.user_id)
+
             res.json({
-                data: user,
+                data: deletedUser,
                 message: "Delete User"
             })
-        } else {
+
+        } catch (error) {
+            console.log(error)
             res.status(500).json({
-                error: "Internal server Error"
+                error: "Internal server Error",
+                message: error.message
             })
         }
+
 
     }
 
