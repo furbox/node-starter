@@ -10,8 +10,8 @@ export default class UserController {
     }
 
     //obtener todos los usuarios
-    getUsersPagination = (req, res) => {
-        const users = this.userModel.getPagination() || [];
+    getUsersPagination = async (req, res) => {
+        const users = await this.userModel.getPagination();
         res.json({
             data: users,
             message: "Ok getUsersPagination"
@@ -57,25 +57,17 @@ export default class UserController {
     }
 
     //crear un usuario
-    createUser = (req, res) => {
+    createUser = async (req, res) => {
         const { fullname, email, pass } = req.body;
 
-        const lastId = this.userModel.getLastId();
 
         const newUser = {
-            user_id: +lastId + 1,
             user_fullname: fullname,
             user_email: email,
-            user_pass: this.hashPassword(pass),
-            user_status: true,
-            user_verify: false,
-            user_createdAt: new Date(),
-            user_updatedAt: '',
-            user_lastloginAt: '',
-            user_img_profile: 'user.png'
+            user_pass: this.hashPassword(pass)
         }
 
-        const user = this.userModel.create(newUser);
+        const user = await this.userModel.create(newUser);
 
         res.json({
             data: user,

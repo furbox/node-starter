@@ -1,3 +1,4 @@
+import prisma from '../../../../data/prisma.js'
 import userData from './users.data.json' assert {type: "json"};
 
 export default class UserModel {
@@ -6,8 +7,8 @@ export default class UserModel {
     }
 
     //obtener todos los usuarios con paginacion
-    getPagination() {
-        return this.users;
+    async getPagination() {
+        return await prisma.user.findMany();
     }
 
     //obtener un usuario por id
@@ -29,9 +30,16 @@ export default class UserModel {
     }
 
     //crear un usuario
-    create(user) {
-        this.users.push(user)
-        return user;
+    async create(user) {
+        try {
+            const newUser = await prisma.user.create({
+                data: user
+            })
+            return newUser;
+        } catch (error) {
+            console.log('create user error: ', error)
+            return false
+        }
     }
 
     //editar un usuario
