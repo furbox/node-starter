@@ -16,8 +16,6 @@ export class UserRoutes {
         router.get('/:id', userController.getUserById)
         //obtener un usuario por email
         router.post('/email/', validation(validateEmailSchema), userController.getUserByEmail)
-        //verificar un usuario
-        router.post('/verify', userController.verifyUser)
         //crear un usuario
         router.post('/', validation(createUserSchema), userController.createUser)
         //editar un usario

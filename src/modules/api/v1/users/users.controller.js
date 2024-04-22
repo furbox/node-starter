@@ -49,14 +49,6 @@ export default class UserController {
             })
     }
 
-    //verificar un usuario
-    //TODO: jwt
-    verifyUser = (req, res) => {
-        res.json({
-            message: "Verify User"
-        })
-    }
-
     //crear un usuario
     createUser = async (req, res) => {
         const { fullname, email, pass } = req.body;
