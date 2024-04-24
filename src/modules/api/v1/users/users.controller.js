@@ -1,3 +1,4 @@
+import { CacheManager } from '../../../../data/redis.js';
 import { NcryptHelper } from '../../../../utils/ncrypt.helper.js';
 import UserModel from './users.model.js'
 
@@ -7,6 +8,7 @@ export default class UserController {
         this.userModel = new UserModel()
         this.hashPassword = NcryptHelper.hash;
         this.comparePassword = NcryptHelper.compare;
+        this.cacheManager = new CacheManager();
     }
 
     //obtener todos los usuarios
@@ -20,8 +22,21 @@ export default class UserController {
 
     //obtener un usuario por id
     getUserById = async (req, res) => {
-        const id = req.params.id
-        const user = await this.userModel.getById(id)
+        const id = req.params.id;
+        let user;
+        //primero validar en cache
+        const keyInCache = `UserController__getUserById__${id}`;
+        const userInCache = await this.cacheManager.get(keyInCache);
+        if (userInCache) {
+            user = userInCache;
+        } else {
+            //validar en db
+            user = await this.userModel.getById(id)
+            if (user) {
+                //guardar en cache 
+                await this.cacheManager.set(keyInCache, user)
+            }
+        }
 
         return user ?
             res.json({
@@ -36,8 +51,19 @@ export default class UserController {
     //obtener un usuario por email
     getUserByEmail = async (req, res) => {
         const { email } = req.body;
-        console.log(email)
-        const user = await this.userModel.getByEmail(email)
+        let user;
+        //primero validar en cache
+        const keyInCache = `UserController__getUserByEmail__${email}`;
+        const userInCache = await this.cacheManager.get(keyInCache);
+        if(userInCache){
+            user = userInCache
+        }else{
+            user = await this.userModel.getByEmail(email)
+            if (user) {
+                //guardar en cache 
+                await this.cacheManager.set(keyInCache, user)
+            }
+        }
 
         return user ?
             res.json({
@@ -113,6 +139,10 @@ export default class UserController {
             user.user_updatedAt = new Date()
 
             const updateUser = await this.userModel.update(user.user_id, user)
+            if(updateUser){
+                await this.cacheManager.set(`UserController__getUserById__${updateUser.user_id}`, updateUser)
+                await this.cacheManager.set(`UserController__getUserByEmail__${updateUser.user_email}`, updateUser)
+            }
 
             res.json({
                 data: updateUser,
@@ -139,6 +169,11 @@ export default class UserController {
 
             //const deletedUser = await this.userModel.delete(user.user_id)
             const deletedUser = await this.userModel.deleteLogic(user.user_id)
+            
+            if(deletedUser){
+                await this.cacheManager.set(`UserController__getUserById__${deletedUser.user_id}`, deletedUser)
+                await this.cacheManager.set(`UserController__getUserByEmail__${deletedUser.user_email}`, deletedUser)
+            }
 
             res.json({
                 data: deletedUser,

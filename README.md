@@ -29,6 +29,11 @@ Crear base de datos
 npm run db:migrate
 ~~~
 
+Crear server de Redis con docker
+~~~shell
+docker compose up -d
+~~~
+
 Iniciar node
 ~~~shell
 npm run dev
