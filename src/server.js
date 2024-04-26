@@ -7,6 +7,7 @@ import { CronController } from "./modules/cron/cron.controller.js";
 import { ModuleRoutes } from './modules/routes.js';
 import morgan from 'morgan'
 import { getFullDate } from './utils/get-date.helper.js'
+import { CacheManager } from './data/redis.js'
 
 
 export class Server {
@@ -15,6 +16,7 @@ export class Server {
         this.app = express()
         this.port = envs.PORT;
         this.router = ModuleRoutes.routes
+        this.cacheManager = new CacheManager();
 
         //excecute engine
         this.engine()
@@ -42,6 +44,7 @@ export class Server {
 
     //middlewares
     middlewares(){
+        this.app.use(this.cacheManager.sessionMiddleware);
         const fecha = getFullDate();
         const accessLogStream = fs.createWriteStream(path.join(__dirname, `../logs/${fecha}.access.log`), { flags: 'a' })
         this.app.use(morgan('combined', { stream: accessLogStream }))

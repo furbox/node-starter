@@ -15,3 +15,16 @@ export const updateUserSchema = Joi.object({
     pass: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}$')),
     email: Joi.string().email()
 })
+
+//changePassword
+export const validateChangePassword = Joi.object({
+    email: Joi.string().email().required(),
+    pass: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}$')).required(),
+    newPass: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}$')).required(),
+})
+
+//login
+export const validateLoginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    pass: Joi.string().required()
+})

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import UserController from "./users.controller.js";
-import { validation } from "../../../../middlewares/validations.middleware.js";
+import { auth, validation } from "../../../../middlewares/validations.middleware.js";
 import { createUserSchema, updateUserSchema, validateEmailSchema } from "../../../../utils/validations.helper.js";
 
 export class UserRoutes {
@@ -11,17 +11,17 @@ export class UserRoutes {
         //definir todas nuestras rutas que tengan que ver con el usuario
 
         //obtener todos los usuarios
-        router.get('/', userController.getUsersPagination)
+        router.get('/', auth, userController.getUsersPagination)
         //obtener un usuario por id
-        router.get('/:id', userController.getUserById)
+        router.get('/:id', auth, userController.getUserById)
         //obtener un usuario por email
-        router.post('/email/', validation(validateEmailSchema), userController.getUserByEmail)
+        router.post('/email/', auth, validation(validateEmailSchema), userController.getUserByEmail)
         //crear un usuario
-        router.post('/', validation(createUserSchema), userController.createUser)
+        router.post('/', auth, validation(createUserSchema), userController.createUser)
         //editar un usario
-        router.put('/:id', validation(updateUserSchema), userController.updateUser)
+        router.put('/:id', auth, validation(updateUserSchema), userController.updateUser)
         //eliminar un usuario
-        router.delete('/:id', userController.deleteUser)
+        router.delete('/:id', auth, userController.deleteUser)
 
         return router
     }

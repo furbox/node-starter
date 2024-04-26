@@ -77,14 +77,15 @@ export default class authController {
                 })
             }
 
-            //TODO: crear token redis
+            //TODO: crear cookies y sessions redis
+            req.session.user_id = user.user_id;
+            req.session.user_email = user.user_email
 
             //actualizar informacion de inicio de sesion
             user.user_lastloginAt = new Date();
             await this.userModel.update(user.user_id, user)
 
             res.json({
-                token: "toker-generado",
                 message: "Login exitoso"
             })
 

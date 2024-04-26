@@ -1,4 +1,6 @@
 import { createClient } from 'redis';
+import RedisStore from "connect-redis"
+import session from 'express-session'
 import envs from '../config/envs.js'
 
 export class CacheManager {
@@ -6,6 +8,26 @@ export class CacheManager {
         this.client = createClient({
             url: envs.REDIS_URL
         })
+
+        this.client.connect();
+
+        this.redisStore = new RedisStore({
+            client: this.client
+        })
+
+        this.sessionMiddleware = session({
+            store: this.redisStore,
+            secret: envs.COOKIE_SECRET,
+            saveUninitialized: false,
+            resave: false,
+            name: 'sessionId',
+            cookie: {
+                secure: process.env.ENVIROMENT === "production",
+                httpOnly: true,
+                maxAge: 1000 * 60 * 60 * 24 * 7 // 1 semana
+            }
+        })
+
     }
 
     async connectIfNeeded() {
