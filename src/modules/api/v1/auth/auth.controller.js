@@ -1,4 +1,6 @@
+import getBaseUrl from "../../../../utils/base-url.helper.js";
 import { NcryptHelper } from "../../../../utils/ncrypt.helper.js";
+import { sendEmailCodeValidation, sendEmailNewPass } from "../../../../utils/sendmail.helper.js";
 import UserModel from "../users/users.model.js";
 
 export default class authController {
@@ -28,9 +30,15 @@ export default class authController {
                 })
             }
 
+            newUser.user_code = this.createCode();
+
             await this.userModel.create(newUser)
 
             //TODO: enviar email para verificar el correo
+            const baseUrl = getBaseUrl(req);
+            const link = baseUrl + "/api/v1/auth/verify/" + newUser.user_code;
+            
+            sendEmailCodeValidation(newUser.user_email,link);
 
             res.status(201).json({
                 message: "Usuario creado con exito"
@@ -106,7 +114,7 @@ export default class authController {
 
         try {
             //TODO: cambiar metodo y agregar atributo user_code
-            const user = await this.userModel.getById(code)
+            const user = await this.userModel.getByCode(code)
             if (!user) {
                 return res.status(400).json({
                     message: "Datos incorrectos"
@@ -121,6 +129,8 @@ export default class authController {
             }
 
             user.user_verify = true;
+            user.user_code = "";
+            user.user_updatedAt = new Date();
             await this.userModel.update(user.user_id, user)
 
             res.json({
@@ -148,9 +158,9 @@ export default class authController {
             await this.userModel.update(user.user_id, user)
 
             //TODO: Enviar Email con la nueva contraseña pass
+            sendEmailNewPass(user.user_email, pass)
 
             res.json({
-                pass,
                 message: "Hemos enviado tu nueva contraseña a tu email. Es mecesario que cambie la contraseña por una de su agrado!"
             })
 

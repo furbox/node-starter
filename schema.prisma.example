@@ -17,6 +17,7 @@ model User {
   user_pass        String
   user_status      Boolean   @default(true)
   user_verify      Boolean   @default(false)
+  user_code        String    @default("")
   user_createdAt   DateTime  @default(now())
   user_updatedAt   DateTime  @updatedAt
   user_lastloginAt DateTime?

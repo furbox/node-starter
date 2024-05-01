@@ -18,7 +18,7 @@ export class AuthRoutes {
         router.get('/verify/:code', authController.verify)
 
         //ruta recuperar contraseña
-        router.post('/recovey-password', validation(validateEmailSchema), authController.recover)
+        router.post('/recovery-password', validation(validateEmailSchema), authController.recover)
 
         //ruta cambiar su contraseña
         router.post('/change-password', [auth, validation(validateChangePassword)], authController.changePassword)

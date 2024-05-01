@@ -42,6 +42,21 @@ export default class UserModel {
         }
     }
 
+    //obtener un usuario por code
+    async getByCode(code) {
+        try {
+            const user = await prisma.user.findFirst({
+                where:{
+                    user_code: code
+                }
+            })
+            return user
+        } catch (error) {
+            console.log(`User Model getByCode: ${error}`)
+            return false;
+        }
+    }
+
     //crear un usuario
     async create(user) {
         try {
