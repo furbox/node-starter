@@ -8,6 +8,7 @@ import { ModuleRoutes } from './modules/routes.js';
 import morgan from 'morgan'
 import { getFullDate } from './utils/get-date.helper.js'
 import { CacheManager } from './data/redis.js'
+import corsMiddleware from './middlewares/cors.middleware.js'
 
 
 export class Server {
@@ -44,6 +45,8 @@ export class Server {
 
     //middlewares
     middlewares(){
+        this.app.options('*', corsMiddleware)
+        this.app.use(corsMiddleware)
         this.app.use(this.cacheManager.sessionMiddleware);
         const fecha = getFullDate();
         const accessLogStream = fs.createWriteStream(path.join(__dirname, `../logs/${fecha}.access.log`), { flags: 'a' })
